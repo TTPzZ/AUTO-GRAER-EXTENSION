@@ -1,5 +1,5 @@
 let isExtensionEnabled = true;
-let pasteKey = ''; let toggleKey = ''; let searchKey = '';
+let toggleKey = ''; let searchKey = '';
 let templates = [];
 let geminiApiKey = '';
 let currentAiModel = 'gemini-2.5-flash';
@@ -604,9 +604,8 @@ function resetExhaustedAiIfNewDate() {
   }
 }
 
-chrome.storage.local.get(['isExtensionEnabled', 'pasteKey', 'toggleKey', 'searchKey', 'geminiApiKey', 'aiModel', 'aiProviders', 'autoTickScores', 'aiPrompt', 'customTags', 'customTagTypes'], (result) => {
+chrome.storage.local.get(['isExtensionEnabled', 'toggleKey', 'searchKey', 'geminiApiKey', 'aiModel', 'aiProviders', 'autoTickScores', 'aiPrompt', 'customTags', 'customTagTypes'], (result) => {
   isExtensionEnabled = result.isExtensionEnabled !== false;
-  if (result.pasteKey) pasteKey = result.pasteKey;
   if (result.toggleKey) toggleKey = result.toggleKey;
   if (result.searchKey) searchKey = result.searchKey;
   if (result.geminiApiKey) geminiApiKey = result.geminiApiKey;
@@ -633,7 +632,6 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
       isExtensionEnabled = changes.isExtensionEnabled.newValue;
       scheduleEvaluationPanelRefresh();
     }
-    if (changes.pasteKey) pasteKey = changes.pasteKey.newValue;
     if (changes.toggleKey) toggleKey = changes.toggleKey.newValue;
     if (changes.searchKey) searchKey = changes.searchKey.newValue;
     if (changes.geminiApiKey) geminiApiKey = changes.geminiApiKey.newValue;

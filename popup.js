@@ -7,7 +7,6 @@ const els = {
   statusText: document.getElementById("statusText"),
   
   // Shortcuts
-  pasteInput: document.getElementById('pasteInput'),
   searchInput: document.getElementById('searchInput'),
   toggleInput: document.getElementById('toggleInput'),
   saveKeysBtn: document.getElementById('saveKeysBtn'),
@@ -103,7 +102,6 @@ async function saveShortcuts() {
   setBusy(true);
   try {
     await storageSet({
-      pasteKey: els.pasteInput.value.trim(),
       searchKey: els.searchInput.value.trim(),
       toggleKey: els.toggleInput.value.trim()
     });
@@ -304,7 +302,6 @@ async function saveAiConfig() {
 // INITIALIZATION
 // ---------------------------------------------------------
 function bindEvents() {
-  setupShortcutInput(els.pasteInput);
   setupShortcutInput(els.searchInput);
   setupShortcutInput(els.toggleInput);
   els.saveKeysBtn?.addEventListener('click', saveShortcuts);
@@ -319,14 +316,12 @@ async function initPopup() {
   initPromptTemplateSelector();
 
   const data = await storageGet([
-    "pasteKey", 
     "searchKey", 
     "toggleKey",
     "aiProviders",
     "aiPrompt"
   ]);
   
-  if (els.pasteInput) els.pasteInput.value = data.pasteKey || '';
   if (els.searchInput) els.searchInput.value = data.searchKey || '';
   if (els.toggleInput) els.toggleInput.value = data.toggleKey || '';
 

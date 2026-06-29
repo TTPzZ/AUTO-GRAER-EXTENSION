@@ -1,12 +1,9 @@
 const state = {
-  updateInfo: null,
   busy: false,
   aiProviders: []
 };
 
 const els = {
-  updateBanner: document.getElementById("updateBanner"),
-  btnCheckUpdates: document.getElementById("btnCheckUpdates"),
   statusText: document.getElementById("statusText"),
   
   // Shortcuts
@@ -74,56 +71,6 @@ function setBusy(nextBusy) {
 }
 
 // ---------------------------------------------------------
-// UPDATE BANNER
-// ---------------------------------------------------------
-function renderUpdateBanner() {
-  const info = state.updateInfo;
-  if (!info) {
-    els.updateBanner.classList.add("hidden");
-    els.updateBanner.innerHTML = "";
-    return;
-  }
-  const checkedAt = info.checkedAt ? new Date(info.checkedAt).toLocaleString() : "unknown";
-  const link = info.latestCommitUrl || info.repoUrl || "https://github.com";
-
-  if (info.updateAvailable) {
-    const shortSha = info.latestCommitSha ? info.latestCommitSha.slice(0, 7) : "unknown";
-    const detail = info.reason === "tag" ? `New tag: ${escapeHtml(info.latestTagName || "unknown")}` : `New commit: ${escapeHtml(shortSha)}`;
-    els.updateBanner.classList.remove("hidden");
-    els.updateBanner.innerHTML = `
-      <div><strong>Update available.</strong> ${detail}</div>
-      <div style="margin-top:4px;">Last check: ${escapeHtml(checkedAt)}</div>
-      <button id="btnOpenUpdateLink" class="btn btn-secondary" type="button" style="margin-top:6px;">Open Repository</button>
-    `;
-    document.getElementById("btnOpenUpdateLink")?.addEventListener("click", () => chrome.tabs.create({ url: link }));
-    return;
-  }
-  els.updateBanner.classList.remove("hidden");
-  els.updateBanner.innerHTML = `
-    <div><strong>Latest version (${escapeHtml(info.localVersion || "unknown")}).</strong></div>
-    <div style="margin-top:4px;">Last check: ${escapeHtml(checkedAt)}</div>
-  `;
-}
-async function checkUpdatesNow() {
-  if (state.busy || !els.btnCheckUpdates) return;
-  const label = els.btnCheckUpdates.textContent;
-  els.btnCheckUpdates.textContent = "Checking...";
-  setBusy(true);
-  chrome.runtime.sendMessage({ type: "CHECK_UPDATES_NOW" }, (response) => {
-    setBusy(false);
-    els.btnCheckUpdates.textContent = label;
-    if (chrome.runtime.lastError || !response?.ok) {
-      setStatus(`Update failed: ${chrome.runtime.lastError?.message || response?.error}`, true);
-      return;
-    }
-    state.updateInfo = response.info || null;
-    renderUpdateBanner();
-    if (state.updateInfo?.updateAvailable) setStatus("Update available.");
-    else setStatus(`Latest version.`);
-  });
-}
-
-// ---------------------------------------------------------
 // SHORTCUTS (Phím tắt)
 // ---------------------------------------------------------
 function formatKeyCombo(e) {
@@ -156,9 +103,9 @@ async function saveShortcuts() {
   setBusy(true);
   try {
     await storageSet({
-      pasteShortcut: els.pasteInput.value.trim(),
-      searchShortcut: els.searchInput.value.trim(),
-      toggleShortcut: els.toggleInput.value.trim()
+      pasteKey: els.pasteInput.value.trim(),
+      searchKey: els.searchInput.value.trim(),
+      toggleKey: els.toggleInput.value.trim()
     });
     setStatus('Đã lưu phím tắt thành công!');
   } catch (err) {
@@ -357,14 +304,6 @@ async function saveAiConfig() {
 // INITIALIZATION
 // ---------------------------------------------------------
 function bindEvents() {
-  els.btnCheckUpdates?.addEventListener("click", checkUpdatesNow);
-  chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === "local" && changes.updateInfo) {
-      state.updateInfo = changes.updateInfo.newValue || null;
-      renderUpdateBanner();
-    }
-  });
-
   setupShortcutInput(els.pasteInput);
   setupShortcutInput(els.searchInput);
   setupShortcutInput(els.toggleInput);
@@ -380,20 +319,16 @@ async function initPopup() {
   initPromptTemplateSelector();
 
   const data = await storageGet([
-    "updateInfo", 
-    "pasteShortcut", 
-    "searchShortcut", 
-    "toggleShortcut",
+    "pasteKey", 
+    "searchKey", 
+    "toggleKey",
     "aiProviders",
     "aiPrompt"
   ]);
   
-  state.updateInfo = data.updateInfo || null;
-  renderUpdateBanner();
-
-  if (els.pasteInput) els.pasteInput.value = data.pasteShortcut || '';
-  if (els.searchInput) els.searchInput.value = data.searchShortcut || '';
-  if (els.toggleInput) els.toggleInput.value = data.toggleShortcut || '';
+  if (els.pasteInput) els.pasteInput.value = data.pasteKey || '';
+  if (els.searchInput) els.searchInput.value = data.searchKey || '';
+  if (els.toggleInput) els.toggleInput.value = data.toggleKey || '';
 
   state.aiProviders = sanitizeAiProviders(data.aiProviders);
   updateProviderFormVisibility();

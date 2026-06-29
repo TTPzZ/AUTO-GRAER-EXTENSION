@@ -135,17 +135,17 @@ function makeElementDraggable(targetEl, handleEl) {
   let startLeft = 0;
   let startTop = 0;
 
-  const stopDragging = () => {
+  const stopDragging = (event) => {
     if (!dragging) return;
     dragging = false;
     document.body.style.userSelect = '';
-    window.removeEventListener('mousemove', onMouseMove, true);
-    window.removeEventListener('mouseup', stopDragging, true);
-    window.removeEventListener('blur', stopDragging);
-    document.removeEventListener('mouseleave', stopDragging, true);
+    handleEl.releasePointerCapture(event.pointerId);
+    handleEl.removeEventListener('pointermove', onPointerMove);
+    handleEl.removeEventListener('pointerup', stopDragging);
+    handleEl.removeEventListener('pointercancel', stopDragging);
   };
 
-  const onMouseMove = (event) => {
+  const onPointerMove = (event) => {
     if (!dragging) return;
     const nextLeft = startLeft + (event.clientX - startX);
     const nextTop = startTop + (event.clientY - startY);
@@ -158,7 +158,7 @@ function makeElementDraggable(targetEl, handleEl) {
     targetEl.style.transform = 'none';
   };
 
-  handleEl.addEventListener('mousedown', (event) => {
+  handleEl.addEventListener('pointerdown', (event) => {
     if (event.button !== 0) return;
     const interactiveTarget = event.target instanceof Element
       ? event.target.closest('button, input, textarea, select, a, [contenteditable="true"]')
@@ -166,6 +166,8 @@ function makeElementDraggable(targetEl, handleEl) {
     if (interactiveTarget) return;
 
     event.preventDefault();
+    handleEl.setPointerCapture(event.pointerId);
+    
     const rect = targetEl.getBoundingClientRect();
     startX = event.clientX;
     startY = event.clientY;
@@ -180,10 +182,9 @@ function makeElementDraggable(targetEl, handleEl) {
 
     dragging = true;
     document.body.style.userSelect = 'none';
-    window.addEventListener('mousemove', onMouseMove, true);
-    window.addEventListener('mouseup', stopDragging, true);
-    window.addEventListener('blur', stopDragging);
-    document.addEventListener('mouseleave', stopDragging, true);
+    handleEl.addEventListener('pointermove', onPointerMove);
+    handleEl.addEventListener('pointerup', stopDragging);
+    handleEl.addEventListener('pointercancel', stopDragging);
   });
 }
 

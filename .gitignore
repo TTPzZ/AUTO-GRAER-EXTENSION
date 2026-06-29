@@ -10,10 +10,6 @@ yarn-error.log*
 
 # Temp files
 *.har
-*.png
-*.jpg
-*.jpeg
-*.gif
 *.jfif
 
 # Embedded tools or submodules

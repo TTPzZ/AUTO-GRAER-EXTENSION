@@ -3,17 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LMS Trial Task Manager</title>
+  <title>Extension Settings</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="popup-root">
     <header class="popup-header">
-      <h1>Trial Task Manager</h1>
+      <h1>⚙️ Settings</h1>
       <button id="btnCheckUpdates" class="btn btn-secondary" type="button">Check Update</button>
     </header>
 
     <section id="updateBanner" class="update-banner hidden" aria-live="polite"></section>
+
+    <!-- Phím tắt Section -->
+    <section class="panel">
+      <h2>Phím tắt</h2>
+      
+      <div class="field-group">
+        <label>1. Phím dán Macro Zalo:</label>
+        <input type="text" id="pasteInput" readonly placeholder="VD: Ctrl+Shift+V">
+      </div>
+      
+      <div class="field-group">
+        <label>2. Mở bảng cây báo cáo:</label>
+        <input type="text" id="searchInput" readonly placeholder="VD: Ctrl+Space">
+      </div>
+      
+      <div class="field-group">
+        <label style="color:#dc3545;">3. Tạm ngừng/Bật Extension:</label>
+        <input type="text" id="toggleInput" readonly placeholder="VD: Ctrl+Alt+P" style="border-color:#dc3545; color:#dc3545;">
+      </div>
+
+      <button id="saveKeysBtn" class="btn btn-primary" style="margin-top:10px; width:100%;">Lưu phím tắt</button>
+    </section>
+
+    <!-- AI Provider & Prompt Section -->
+    <section class="panel">
+      <h2>AI Provider & Prompt</h2>
+      <div class="help-text">
+        Google key sẽ tự động fallback model theo thứ tự: <b>gemini-2.5-flash</b> -> <b>gemini-2.5-flash-lite</b> nếu hết quota.
+      </div>
+
+      <div class="provider-form">
+        <select id="providerTypeInput">
+          <option value="google">Google Gemini</option>
+          <option value="other">Other Provider</option>
+        </select>
+        <input type="text" id="providerNameInput" placeholder="Label (VD: Google key 1, OpenRouter...)">
+        <input type="password" id="providerApiKeyInput" placeholder="API Key">
+        <input type="text" id="providerModelInput" placeholder="Model name (chỉ dùng cho Other Provider)" style="display:none;">
+        <button id="btnAddProviderKey" type="button" class="btn btn-primary">Thêm / Cập nhật key</button>
+        <div id="providerFormHint" class="hint-text"></div>
+      </div>
+
+      <div id="providerList" class="provider-list"></div>
+
+      <details class="prompt-details">
+        <summary>Prompt AI (bấm để mở)</summary>
+        <div class="prompt-container">
+          <label>Câu lệnh AI (dùng biến {keywords}):</label>
+          <div class="prompt-header">
+            <select id="promptTemplateSelect">
+              <option value="__custom__">Keep current prompt</option>
+            </select>
+            <button id="applyPromptTemplateBtn" type="button" class="btn btn-primary btn-sm">Apply</button>
+          </div>
+          <div id="promptTemplateHint" class="hint-text"></div>
+          <textarea id="aiPromptInput"></textarea>
+        </div>
+      </details>
+
+      <button id="saveAiBtn" class="btn btn-success" style="margin-top:10px; width:100%;">Lưu cấu hình AI</button>
+    </section>
 
     <footer class="popup-footer">
       <div id="statusText" class="status-text" aria-live="polite"></div>

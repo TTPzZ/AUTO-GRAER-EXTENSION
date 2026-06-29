@@ -244,3 +244,23 @@ textarea[readonly] {
 .btn-secondary:hover:enabled {
   background: #d9e6f5;
 }
+.field-group { margin-bottom: 10px; }
+.field-group label { display: block; font-size: 12px; margin-bottom: 4px; color: #334e68; font-weight: 600; }
+.help-text { font-size: 11px; color: #52606d; line-height: 1.4; margin-bottom: 10px; }
+.hint-text { font-size: 11px; color: #666; margin-top: 4px; }
+.provider-form { background: #f8fafc; border: 1px solid #d9e2ec; border-radius: 8px; padding: 10px; display: grid; gap: 8px; margin-bottom: 10px; }
+.provider-list { display: grid; gap: 8px; margin-bottom: 10px; }
+.provider-row { border: 1px solid #d9e2ec; background: #fff; border-radius: 6px; padding: 8px; display: grid; gap: 4px; }
+.provider-title { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: bold; color: #123; }
+.provider-meta { font-size: 11px; color: #5a6b7a; word-break: break-word; }
+.provider-remove { border: none; background: #dc3545; color: #fff; border-radius: 4px; padding: 4px 6px; cursor: pointer; font-size: 10px; }
+.provider-remove:hover { opacity: 0.9; }
+.prompt-details { background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #d9e2ec; margin-bottom: 10px; }
+.prompt-details summary { font-weight: bold; cursor: pointer; font-size: 12px; color: var(--primary); outline: none; }
+.prompt-container { margin-top: 10px; }
+.prompt-header { display: flex; gap: 8px; margin-top: 6px; align-items: center; }
+.prompt-header select { flex: 1; }
+.btn-sm { padding: 6px 8px; font-size: 11px; }
+.btn-success { background: var(--ok); color: #fff; }
+.btn-success:hover:enabled { background: #167a30; }
+#aiPromptInput { height: 80px; resize: vertical; }

@@ -1,16 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "your mom chung may beo - promaxxxxx",
-  "version": "3.3",
-  "version_name": "3.3",
-  "description": "tool lo",
+  "name": "AUTO-GRAER-EXTENSION",
+  "version": "0.0.1",
+  "version_name": "0.0.1",
+  "description": "auto graer tool",
   "permissions": [
     "storage",
     "clipboardWrite",
     "clipboardRead",
-    "alarms",
-    "identity",
-    "identity.email"
+    "alarms"
   ],
   "host_permissions": [
     "https://api.github.com/*"
@@ -20,10 +18,10 @@
     "default_title": "Mo khay lich su"
   },
   "icons": {
-    "16": "1.jfif",
-    "32": "1.jfif",
-    "48": "1.jfif",
-    "128": "1.jfif"
+    "16": "1.png",
+    "32": "1.png",
+    "48": "1.png",
+    "128": "1.png"
   },
   "background": {
     "service_worker": "background.js"

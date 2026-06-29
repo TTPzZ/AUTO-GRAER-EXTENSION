@@ -55,18 +55,6 @@ const btnSaveData = document.getElementById('btnSaveData');
 const btnDeleteData = document.getElementById('btnDeleteData');
 const cloudStatus = document.getElementById('cloudStatus');
 
-const authMethodGoogle = document.getElementById('authMethodGoogle');
-const authMethodManual = document.getElementById('authMethodManual');
-const btnGoogleLogin = document.getElementById('btnGoogleLogin');
-const googleIdentityInfo = document.getElementById('googleIdentityInfo');
-const manualUidInput = document.getElementById('manualUidInput');
-const manualTokenInput = document.getElementById('manualTokenInput');
-const btnSaveManualIdentity = document.getElementById('btnSaveManualIdentity');
-const identityStatus = document.getElementById('identityStatus');
-const currentIdentitySummary = document.getElementById('currentIdentitySummary');
-const btnClearIdentity = document.getElementById('btnClearIdentity');
-
-let currentUserIdentity = null;
 let aiProviders = [];
 let editingProviderId = null;
 
@@ -317,152 +305,7 @@ function removeProvider(providerId) {
   renderProviderList();
 }
 
-function setIdentityStatus(text, isError = false) {
-  if (!identityStatus) return;
-  identityStatus.textContent = text;
-  identityStatus.style.color = isError ? '#dc3545' : '#0056b3';
-}
 
-function updateIdentityMethodUI() {
-  if (!authMethodGoogle || !authMethodManual) return;
-  const useGoogle = authMethodGoogle.checked;
-  if (btnGoogleLogin) btnGoogleLogin.disabled = !useGoogle;
-  if (manualUidInput) manualUidInput.disabled = useGoogle;
-  if (manualTokenInput) manualTokenInput.disabled = useGoogle;
-  if (btnSaveManualIdentity) btnSaveManualIdentity.disabled = useGoogle;
-}
-
-function renderIdentity(identity) {
-  currentUserIdentity = identity || null;
-  if (!currentIdentitySummary) return;
-
-  if (!identity || !identity.userId) {
-    currentIdentitySummary.textContent = 'Identity đang trống. Hãy chọn Google hoặc Manual UID.';
-    setIdentityStatus('Chưa cài đặt user identity.');
-    if (googleIdentityInfo) {
-      googleIdentityInfo.textContent = 'Lấy profile từ tài khoản Google của Chrome profile hiện tại.';
-    }
-    return;
-  }
-
-  const methodLabel = identity.method === 'google' ? 'Google Login' : 'Manual UID/Token';
-  const updatedAt = identity.updatedAt ? new Date(identity.updatedAt).toLocaleString() : 'Unknown';
-  const tokenInfo = identity.token ? 'Token: saved' : 'Token: empty';
-  setIdentityStatus(`Đang dùng ${methodLabel} - UID: ${identity.userId}`);
-  currentIdentitySummary.textContent = `Method: ${methodLabel} | Display: ${identity.displayName || identity.userId} | ${tokenInfo} | Updated: ${updatedAt}`;
-
-  if (identity.method === 'google') {
-    if (authMethodGoogle) authMethodGoogle.checked = true;
-    if (googleIdentityInfo) {
-      const email = identity.google?.email || '(no email returned)';
-      const profileId = identity.google?.id || '(no profile id)';
-      googleIdentityInfo.textContent = `Google account: ${email} | Profile ID: ${profileId}`;
-    }
-  } else {
-    if (authMethodManual) authMethodManual.checked = true;
-    if (manualUidInput) manualUidInput.value = identity.userId || '';
-    if (manualTokenInput) manualTokenInput.value = identity.token || '';
-  }
-
-  updateIdentityMethodUI();
-}
-
-function saveIdentity(identity) {
-  chrome.storage.local.set({ userIdentity: identity }, () => {
-    renderIdentity(identity);
-  });
-}
-
-function handleGoogleIdentity() {
-  setIdentityStatus('Đang kết nối Google profile...');
-  chrome.identity.getProfileUserInfo({ accountStatus: 'ANY' }, (profile) => {
-    if (chrome.runtime.lastError) {
-      setIdentityStatus(`Google login lỗi: ${chrome.runtime.lastError.message}`, true);
-      return;
-    }
-
-    const googleId = profile?.id?.trim() || '';
-    const email = profile?.email?.trim() || '';
-    const userId = googleId || email;
-
-    if (!userId) {
-      setIdentityStatus('Không lấy được Google ID. Hãy đăng nhập Chrome profile trước.', true);
-      return;
-    }
-
-    const identity = {
-      method: 'google',
-      userId,
-      displayName: email || googleId,
-      token: '',
-      google: { id: googleId, email },
-      updatedAt: new Date().toISOString()
-    };
-
-    saveIdentity(identity);
-  });
-}
-
-function handleManualIdentitySave() {
-  const uid = manualUidInput?.value.trim() || '';
-  const token = manualTokenInput?.value.trim() || '';
-
-  if (!uid) {
-    setIdentityStatus('UID không được để trống.', true);
-    if (manualUidInput) manualUidInput.focus();
-    return;
-  }
-
-  const identity = {
-    method: 'manual',
-    userId: uid,
-    displayName: uid,
-    token,
-    updatedAt: new Date().toISOString()
-  };
-
-  saveIdentity(identity);
-}
-
-function clearIdentity() {
-  chrome.storage.local.remove(['userIdentity'], () => {
-    currentUserIdentity = null;
-    if (manualUidInput) manualUidInput.value = '';
-    if (manualTokenInput) manualTokenInput.value = '';
-    if (authMethodGoogle) authMethodGoogle.checked = true;
-    updateIdentityMethodUI();
-    renderIdentity(null);
-  });
-}
-
-function initIdentitySection(identity) {
-  if (!authMethodGoogle || !authMethodManual) return;
-
-  if (identity?.method === 'manual') {
-    authMethodManual.checked = true;
-    authMethodGoogle.checked = false;
-  } else {
-    authMethodGoogle.checked = true;
-    authMethodManual.checked = false;
-  }
-
-  if (btnGoogleLogin) {
-    btnGoogleLogin.addEventListener('click', handleGoogleIdentity);
-  }
-  if (btnSaveManualIdentity) {
-    btnSaveManualIdentity.addEventListener('click', handleManualIdentitySave);
-  }
-  if (btnClearIdentity) {
-    btnClearIdentity.addEventListener('click', clearIdentity);
-  }
-
-  [authMethodGoogle, authMethodManual].forEach((radio) => {
-    radio.addEventListener('change', updateIdentityMethodUI);
-  });
-
-  renderIdentity(identity || null);
-  updateIdentityMethodUI();
-}
 
 // ==========================================
 // HỆ THỐNG GIỮ TRẠNG THÁI CÂY THƯ MỤC
@@ -495,7 +338,7 @@ initPromptTemplateSelector();
 updateProviderFormVisibility();
 clearProviderForm();
 
-chrome.storage.local.get(['pasteKey', 'searchKey', 'toggleKey', 'aiProviders', 'geminiApiKey', 'aiPrompt', 'userIdentity'], (result) => {
+chrome.storage.local.get(['pasteKey', 'searchKey', 'toggleKey', 'aiProviders', 'geminiApiKey', 'aiPrompt'], (result) => {
   if (result.pasteKey) pasteInput.value = result.pasteKey;
   if (result.searchKey) searchInput.value = result.searchKey;
   if (result.toggleKey) toggleInput.value = result.toggleKey;
@@ -515,7 +358,7 @@ chrome.storage.local.get(['pasteKey', 'searchKey', 'toggleKey', 'aiProviders', '
 
   aiPromptInput.value = result.aiPrompt || DEFAULT_PROMPT;
   syncPromptTemplateSelect(aiPromptInput.value);
-  initIdentitySection(result.userIdentity || null);
+
 
   fetchAllData(); 
 });
@@ -619,7 +462,7 @@ saveAiBtn.addEventListener('click', () => {
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
   if (namespace !== 'local') return;
-  if (changes.userIdentity) renderIdentity(changes.userIdentity.newValue || null);
+
   if (changes.aiProviders) {
     aiProviders = sanitizeAiProviders(changes.aiProviders.newValue);
     renderProviderList();

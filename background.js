@@ -2,10 +2,10 @@ const UPDATE_CHECK_ALARM = "update-check-alarm";
 const UPDATE_CHECK_INTERVAL_MINUTES = 60;
 
 const GITHUB_REPO = {
-  owner: "Gaesiii",
-  name: "Mindx-auto-grader-extension",
+  owner: "TTPzZ",
+  name: "AUTO-GRAER-EXTENSION",
   branch: "main",
-  homepage: "https://github.com/Gaesiii/Mindx-auto-grader-extension"
+  homepage: "https://github.com/TTPzZ/AUTO-GRAER-EXTENSION"
 };
 
 const STORAGE_KEYS = {

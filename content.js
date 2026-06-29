@@ -1,4 +1,4 @@
-﻿let isExtensionEnabled = true;
+let isExtensionEnabled = true;
 let pasteKey = ''; let toggleKey = ''; let searchKey = '';
 let templates = [];
 let geminiApiKey = '';
@@ -1311,7 +1311,7 @@ async function generateAIComment() {
   btn.disabled = true;
 
   const defaultPrompt = `Ban la giao vien day lap trinh than thien. Dua vao tu khoa: "${keywords}". Viet thanh 3 y: Diem manh, Diem can cai thien, Loi khuyen.`;
-  const finalPromptText = userAiPrompt ? userAiPrompt.replace('{keywords}', keywords) : defaultPrompt;
+  const finalPromptText = userAiPrompt ? userAiPrompt.replaceAll('{keywords}', keywords) : defaultPrompt;
 
   const context = getEvaluationContext();
   const allRadios = context ? context.radios : getVisibleEvaluationRadios();
@@ -2258,6 +2258,8 @@ async function processBulkStudentWithComment(student, commentHtml) {
 
   studentActionButton.scrollIntoView({ block: 'center', inline: 'nearest' });
   studentActionButton.click();
+  
+  await sleep(1500);
 
   const activeDialog = await waitForBulkDialog();
   if (!activeDialog) {
@@ -2271,24 +2273,17 @@ async function processBulkStudentWithComment(student, commentHtml) {
 
   updateBulkEditorContent(editor, commentHtml);
 
-  await sleep(700);
+  await sleep(800);
 
-  let clickedSave = false;
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    if (!isBulkDialogOpen(activeDialog)) break;
-    const saveButton = getBulkSaveButton(activeDialog) || getBulkSaveButton(document);
-    if (!saveButton) {
-      await sleep(500);
-      continue;
-    }
-    saveButton.click();
-    clickedSave = true;
-    await sleep(900);
-  }
+  let saveButton = getBulkSaveButton(activeDialog) || getBulkSaveButton(document);
+  if (saveButton) saveButton.click();
 
-  if (!clickedSave && isBulkDialogOpen(activeDialog)) {
-    throw new Error(`Không tìm thấy nút lưu cho ${student.name}`);
-  }
+  await sleep(1000);
+
+  saveButton = getBulkSaveButton(activeDialog) || getBulkSaveButton(document);
+  if (saveButton) saveButton.click();
+
+  await sleep(1500);
 
   if (isBulkDialogOpen(activeDialog)) {
     const closeButton = getBulkCloseButton(activeDialog) || getBulkCloseButton(document);

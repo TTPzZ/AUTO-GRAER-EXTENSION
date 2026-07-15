@@ -924,6 +924,10 @@ function getVisibleEvaluationRadios() {
   return Array.from(document.querySelectorAll('input[type="radio"]')).filter(isElementVisible);
 }
 
+function getVisibleEvaluationCheckboxes() {
+  return Array.from(document.querySelectorAll('input[type="checkbox"]')).filter(isElementVisible);
+}
+
 function getVisibleQuillEditors() {
   return Array.from(document.querySelectorAll('.ql-editor')).filter(isElementVisible);
 }
@@ -1117,23 +1121,48 @@ function generateRandomScorePattern(level, criteriaCount) {
   return Array.from({ length: count }, () => getWeightedRandomScore(level));
 }
 
-function fillReactScores(level) {
+async function fillReactScores(level) {
   const context = getEvaluationContext();
   const allRadios = context ? context.radios : getVisibleEvaluationRadios();
+  const allCheckboxes = getVisibleEvaluationCheckboxes();
   const pointsPerCriteria = 5;
   const criteriaCount = Math.floor(allRadios.length / pointsPerCriteria);
 
-  if (criteriaCount <= 0) {
+  if (criteriaCount <= 0 && allCheckboxes.length === 0) {
     showNotificationToast('Khong tim thay bang diem de auto tick');
     return;
   }
 
-  const scoresArray = generateRandomScorePattern(level, criteriaCount);
-  for (let i = 0; i < scoresArray.length; i++) {
-    const targetIndex = (i * pointsPerCriteria) + (scoresArray[i] - 1);
-    if (allRadios[targetIndex]) allRadios[targetIndex].click();
+  // 1. Handle Radios (RATE)
+  if (criteriaCount > 0) {
+    const scoresArray = generateRandomScorePattern(level, criteriaCount);
+    for (let i = 0; i < scoresArray.length; i++) {
+      const targetIndex = (i * pointsPerCriteria) + (scoresArray[i] - 1);
+      if (allRadios[targetIndex]) {
+        allRadios[targetIndex].click();
+        await sleep(50);
+      }
+    }
+    showNotificationToast(`Da tick ${level.toUpperCase()}: ${scoresArray.join('-')}`);
   }
-  showNotificationToast(`Da tick ${level.toUpperCase()}: ${scoresArray.join('-')}`);
+
+  // 2. Handle Checkboxes (DEMO)
+  if (allCheckboxes.length > 0) {
+    let checkRatio = 1;
+    if (level === 'kha') checkRatio = 0.8;
+    if (level === 'tb') checkRatio = 0.5;
+    
+    let checkedCount = 0;
+    for (let i = 0; i < allCheckboxes.length; i++) {
+      const shouldBeChecked = Math.random() < checkRatio || (level === 'gioi');
+      if (allCheckboxes[i].checked !== shouldBeChecked) {
+        allCheckboxes[i].click();
+        await sleep(50);
+      }
+      if (shouldBeChecked) checkedCount++;
+    }
+    showNotificationToast(`Da tick Demo: ${checkedCount}/${allCheckboxes.length} ô`);
+  }
 }
 
 function buildAiCandidates() {

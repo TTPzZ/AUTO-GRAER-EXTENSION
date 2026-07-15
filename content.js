@@ -995,7 +995,7 @@ function closeEvaluationPanel(panel) {
 function buildEvaluationPanel(contextKey) {
   const panel = document.createElement('div');
   panel.id = ACP_EVAL_PANEL_ID;
-  panel.dataset.contextKey = contextKey;
+panel.dataset.contextKey = contextKey;
   panel.dataset.closed = '0';
   panel.style.cssText = `position: fixed; top: 80px; right: 20px; width: min(320px, calc(100vw - 40px)); background: #ffffff; border-radius: 10px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); z-index: 2147483647; padding: 14px; font-family: Arial, sans-serif; border: 1px solid #e0e0e0;`;
   panel.innerHTML = `
@@ -1003,10 +1003,13 @@ function buildEvaluationPanel(contextKey) {
       <h4 style="margin:0; color:#1a73e8; font-size:15px;">Auto Tick Diem LMS</h4>
       <button id="acp-eval-close" type="button" style="background:transparent; border:none; color:#6b7280; font-size:12px; cursor:pointer;">Dong</button>
     </div>
-    <div style="display:flex; gap:8px; margin-bottom:15px;">
+    <div style="display:flex; gap:8px; margin-bottom:8px;">
       <button id="btn-gioi" type="button" style="flex:1; background:#28a745; color:#fff; border:none; padding:8px; border-radius:6px; cursor:pointer; font-weight:bold;">Gioi</button>
       <button id="btn-kha" type="button" style="flex:1; background:#f6c000; color:#111; border:none; padding:8px; border-radius:6px; cursor:pointer; font-weight:bold;">Kha</button>
       <button id="btn-tb" type="button" style="flex:1; background:#dc3545; color:#fff; border:none; padding:8px; border-radius:6px; cursor:pointer; font-weight:bold;">TB</button>
+    </div>
+    <div style="margin-bottom:15px;">
+      <button id="btn-hc" type="button" style="width:100%; background:#17a2b8; color:#fff; border:none; padding:8px; border-radius:6px; cursor:pointer; font-weight:bold;">HC</button>
     </div>
     <div style="border-top:1px solid #eee; padding-top:12px;">
       <label style="font-size:12px; font-weight:bold; color:#555;">Tao nhan xet chung (AI):</label>
@@ -1023,6 +1026,7 @@ function buildEvaluationPanel(contextKey) {
   panel.querySelector('#btn-gioi').addEventListener('click', () => fillReactScores('gioi'));
   panel.querySelector('#btn-kha').addEventListener('click', () => fillReactScores('kha'));
   panel.querySelector('#btn-tb').addEventListener('click', () => fillReactScores('tb'));
+  panel.querySelector('#btn-hc').addEventListener('click', () => fillReactScores('hc'));
   panel.querySelector('#btn-gen-ai').addEventListener('click', generateAIComment);
   const evalDragHandle = panel.querySelector('#acp-eval-drag-handle');
   if (evalDragHandle instanceof HTMLElement) {
@@ -1086,19 +1090,10 @@ function injectEvaluationPanel() {
 
 function getWeightedRandomScore(level) {
   const buckets = {
-    gioi: [
-      { score: 4, weight: 35 },
-      { score: 5, weight: 65 }
-    ],
-    kha: [
-      { score: 3, weight: 45 },
-      { score: 4, weight: 45 },
-      { score: 5, weight: 10 }
-    ],
-    tb: [
-      { score: 3, weight: 78 },
-      { score: 4, weight: 22 }
-    ]
+    gioi: [ { score: 4, weight: 10 }, { score: 5, weight: 90 } ],
+    kha:  [ { score: 4, weight: 80 }, { score: 5, weight: 20 } ],
+    tb:   [ { score: 3, weight: 50 }, { score: 4, weight: 50 } ],
+    hc:   [ { score: 3, weight: 100 } ]
   };
 
   const profile = buckets[level] || buckets.tb;
@@ -1114,7 +1109,25 @@ function getWeightedRandomScore(level) {
 
 function generateRandomScorePattern(level, criteriaCount) {
   const count = Math.max(0, Number(criteriaCount) || 0);
-  return Array.from({ length: count }, () => getWeightedRandomScore(level));
+  if (count === 0) return [];
+
+  let targetMin, targetMax;
+  if (level === 'gioi') { targetMin = 4.7; targetMax = 5.0; }
+  else if (level === 'kha') { targetMin = 4.0; targetMax = 4.69; }
+  else if (level === 'tb') { targetMin = 3.5; targetMax = 3.99; }
+  else if (level === 'hc') { targetMin = 3.0; targetMax = 3.49; }
+  else { targetMin = 3.0; targetMax = 5.0; }
+
+  for (let attempts = 0; attempts < 1000; attempts++) {
+    let arr = Array.from({ length: count }, () => getWeightedRandomScore(level));
+    let avg = arr.reduce((a, b) => a + b, 0) / count;
+    if (avg >= targetMin && avg <= targetMax) {
+      return arr;
+    }
+  }
+  
+  let fallbackVal = Math.round((targetMin + targetMax) / 2);
+  return Array.from({ length: count }, () => fallbackVal);
 }
 
 async function fillReactScores(level) {
